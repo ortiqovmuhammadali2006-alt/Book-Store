@@ -1,24 +1,58 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter, DefaultRouter
 
-from .views import (
-    BookCreate,
-    BookListView,
-    CategoryListCreateView,
-    CategoryRetrieveUpdateDestroyView,
-    BookRetrieveUpdateDestroyView,
-)
+from .views import BookViewSet, CategoryViewSet
+
+# router = SimpleRouter()
+
+router = DefaultRouter()
+
+router.register('books', BookViewSet, basename='book')
+router.register('category', CategoryViewSet, basename='category')
+
+#3-usul
+
+urlpatterns = router.urls
 
 
-urlpatterns = [
-    path("books/", BookListView.as_view(), name="books"),
-    path("books/create/", BookCreate.as_view(), name="book_create"),
-    path('book/detail/<int:pk>/', BookRetrieveUpdateDestroyView.as_view(), name='book_detail'),
 
+#2-usul
+# urlpatterns = [
+#     path('', include(router.urls))
+# ]
 
-    path("category/", CategoryListCreateView.as_view(), name="categories"),
-    path(
-        "category/detail/<int:pk>/",
-        CategoryRetrieveUpdateDestroyView.as_view(),
-        name="category_detail",
-    ),
-]
+#o'zimizani usul
+# urlpatterns = [
+#     path(
+#         "books/", BookViewSet.as_view({"get": "list", "post": "create"}), name="books"
+#     ),
+#     path(
+#         "books/<int:pk>/",
+#         BookViewSet.as_view(
+#             {
+#                 "get": "retrieve",
+#                 "put": "update",
+#                 "patch": "partial_update",
+#                 "delete": "destroy",
+#             }
+#         ),
+#         name="book_detail",
+#     ),
+#     path(
+#         "category/",
+#         CategoryViewSet.as_view({"get": "list", "post": "create"}),
+#         name="category",
+#     ),
+#     path(
+#         "category/<int:pk>/",
+#         CategoryViewSet.as_view(
+#             {
+#                 "get": "retrieve",
+#                 "put": "update",
+#                 "patch": "partial_update",
+#                 "delete": "destroy",
+#             }
+#         ),
+#         name="category_detail",
+#     ),
+# ]
