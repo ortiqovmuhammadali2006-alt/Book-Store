@@ -3,23 +3,12 @@ from rest_framework import serializers
 from .models import Category, Book, Comment
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ("name",)
-        read_only_fields = ("id",)
-
-    def validate_name(self, value: str):
-        if not value.istitle():
-            raise serializers.ValidationError("Nomi bosh harfda bo'lishi kerak")
-
-        return value
-
-
 class BookSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name="book-detail")
+
     class Meta:
         model = Book
-        exclude = ("anotation",)
+        fields = "__all__"
 
     def validate_name(self, value):
         if value.istitle():
@@ -30,7 +19,7 @@ class BookSerializer(serializers.ModelSerializer):
         return value
 
     def validate_author(self, value):
-        if not value.istitle():
+        if value.istitle():
             raise serializers.ValidationError(
                 "Muallifni ism-familiyasi bosh harfi katta harf bo'lishi kerak"
             )
@@ -43,6 +32,34 @@ class BookSerializer(serializers.ModelSerializer):
                 "Mahsulot narxi manfiy bo'lishi mumkin emas"
             )
         return value
+
+
+class CategoryBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ("name", "author", "price", "anotation", "is_active")
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    books = CategoryBookSerializer(many=True)
+
+    def create(self, validated_data):
+        books_data = validated_data.pop("books")
+        category = Category.objects.create(**validated_data)
+        for book_data in books_data:
+            Book.objects.create(category=category, **book_data)
+        return category
+
+    class Meta:
+        model = Category
+        fields = ("id", "name", "description", "books")
+        read_only_fields = ("id",)
+
+    # def validate_name(self, value: str):
+    #     if value.istitle():
+    #         raise serializers.ValidationError("Nomi bosh harfda bo'lishi kerak")
+
+    #     return value
 
 
 class CommentSerializer(serializers.ModelSerializer):
