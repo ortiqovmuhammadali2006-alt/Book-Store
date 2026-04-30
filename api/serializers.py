@@ -3,8 +3,24 @@ from rest_framework import serializers
 from .models import Category, Book, Comment
 
 
+class CategoryBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ("name", "author", "price", "anotation", "is_active")
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ("id", "name", "description", "books")
+        read_only_fields = ("id",)
+
+
 class BookSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name="book-detail")
+    category = CategorySerializer(many=True)
+    comment = serializers.CharField(
+        source="comment.rating", default=None, read_only=True
+    )
 
     class Meta:
         model = Book
@@ -34,32 +50,19 @@ class BookSerializer(serializers.ModelSerializer):
         return value
 
 
-class CategoryBookSerializer(serializers.ModelSerializer):
+class BookSerializerForCategoryDetail(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ("name", "author", "price", "anotation", "is_active")
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    books = CategoryBookSerializer(many=True)
-
-    def create(self, validated_data):
-        books_data = validated_data.pop("books")
-        category = Category.objects.create(**validated_data)
-        for book_data in books_data:
-            Book.objects.create(category=category, **book_data)
-        return category
+class CategorySerializerForDetail(serializers.ModelSerializer):
+    books = BookSerializerForCategoryDetail(many=True, read_only=True)
 
     class Meta:
         model = Category
         fields = ("id", "name", "description", "books")
         read_only_fields = ("id",)
-
-    # def validate_name(self, value: str):
-    #     if value.istitle():
-    #         raise serializers.ValidationError("Nomi bosh harfda bo'lishi kerak")
-
-    #     return value
 
 
 class CommentSerializer(serializers.ModelSerializer):

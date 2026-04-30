@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "djoser",
     "drf_yasg",
-    'django_filters',
+    "django_filters",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "book_store.urls"
@@ -131,3 +133,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]

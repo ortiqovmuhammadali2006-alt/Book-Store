@@ -1,36 +1,43 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 from .models import Category, Book, Comment
-from .serializers import CategorySerializer, BookSerializer, CommentSerializer
+from .serializers import (
+    CategorySerializer,
+    BookSerializer,
+    CommentSerializer,
+    CategorySerializerForDetail,
+)
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().prefetch_related("books")
     serializer_class = CategorySerializer
 
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["name"]
-    search_fields = ["name"]
-    ordering_fields = ["name"]
+    def get_serializer_class(self):
+        if self.kwargs.get("pk"):
+            return CategorySerializerForDetail
+        else:
+            return CategorySerializer
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.all()
+    queryset = (
+        Book.objects.all()
+        .prefetch_related("category")
+        .select_related("comment")
+        .only()  # kerakli ma'lumotlarni databasedan olish uchun only() ishlatiladi
+    )
+
+    # queryset = (
+    #     Book.objects.all()
+    #     .prefetch_related("category")
+    #     .select_related("comment")
+    #     .defer()  # keraksiz ma'lumotlarni databasedan olish uchun defer() ishlatiladi
+    # )
     serializer_class = BookSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = {"price": ["gt", "lt", "gte", "lte"]}
-    search_fields = ["name", "author", "price"]
-    ordering_fields = ["name", "author", "price"]
 
 
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = {"rating": ["gt", "lt", "gte", "lte"]}
-    search_fields = ["user__username", "book__name", "text", "rating"]
-    ordering_fields = ["user__username", "book__name", "text", "rating", "created_at"]
