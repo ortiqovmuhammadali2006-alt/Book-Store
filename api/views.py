@@ -1,5 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Category, Book, Comment
 from .serializers import (
@@ -13,6 +13,7 @@ from .serializers import (
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all().prefetch_related("books")
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.kwargs.get("pk"):
