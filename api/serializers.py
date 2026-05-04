@@ -10,9 +10,10 @@ class CategoryBookSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    books = CategoryBookSerializer(many=True, read_only=True)
     class Meta:
         model = Category
-        fields = ("id", "name", "description", "books")
+        fields = ("id", "name", "description", "is_staff", "books")
         read_only_fields = ("id",)
 
 
@@ -61,7 +62,7 @@ class CategorySerializerForDetail(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ("id", "name", "description", "books")
+        fields = ("id", "name", "description", "is_staff", "books")
         read_only_fields = ("id",)
 
 

@@ -1,6 +1,9 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+
 from .models import Category, Book, Comment
 from .serializers import (
     CategorySerializer,
@@ -14,6 +17,11 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all().prefetch_related("books")
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["name", "is_staff"]
+    search_fields = ["name", "is_staff"]
+    ordering_fields = ["name", "is_staff"]
+    
 
     def get_serializer_class(self):
         if self.kwargs.get("pk"):
